@@ -1,12 +1,36 @@
-apiVersion: monitoring.coreos.com/v1
-kind: ServiceMonitor
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: custom-exporter
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: custom-exporter
+  template:
+    metadata:
+      labels:
+        app: custom-exporter
+    spec:
+      containers:
+        - name: custom-exporter
+          image: docker.io/houshengbo/prometheus-http:latest
+          ports:
+            - name: web
+              containerPort: 8080
+---
+kind: Service
+apiVersion: v1
 metadata:
   name: custom-exporter
   labels:
     app: custom-exporter
 spec:
+#  type: ClusterIP
   selector:
-    matchLabels:
-      app: custom-exporter
-  endpoints:
-    - port: web
+    app: custom-exporter
+  ports:
+    - protocol: TCP
+      name: web
+      port: 8080
+      targetPort: 8080
